@@ -15,43 +15,45 @@ import sideImage3 from "../../assets/images/sider_2019_02-04-2.png";
 import styles from "./HomePage.module.css";
 import { withTranslation, WithTranslation } from "react-i18next"; // w小寫代表react高階組件，W大寫代表typescript類型定義
 import axios from "axios";
+import { connect, MapStateToProps } from "react-redux";
+import { RootState } from "../../redux/store";
+import { giveMeDataActionCreator } from "../../redux/recommendProducts/recommendProductsActions";
 
-interface State {
-    loading: boolean;
-    error: string | null;
-    productList: any[];
-}
-class HomePageComponent extends React.Component<WithTranslation, State> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            loading: true,
-            error: null,
-            productList: [],
-        };
-    }
+const mapStateToProps = (state: RootState) => {
+    return {
+        loading: state.recommendProducts.loading,
+        error: state.recommendProducts.error,
+        productList: state.recommendProducts.productList,
+    };
+};
 
-    async componentDidMount() {
-        try {
-            const { data } = await axios.get(
-                "http://123.56.149.216:8089/api/productCollections"
-            );
-            this.setState({
-                loading: false,
-                error: null,
-                productList: data,
-            });
-        } catch (error) {
-            this.setState({
-                // error: error.message,
-                error: "出錯了",
-                loading: false,
-            });
-        }
+const mapDispatchToProps = (dispatch) => {
+    return {
+        giveMeData: () => {
+            dispatch(giveMeDataActionCreator());
+        },
+        // fetchStart: () => {
+        //     dispatch(fetchRecommendProductStartActionCreator());
+        // },
+        // fetchSuccess: (data) => {
+        //     dispatch(fetchRecommendProductSuccessActionCreator(data));
+        // },
+        // fetchFail: (error) => {
+        //     dispatch(fetchRecommendProductFailActionCreator(error));
+        // },
+    };
+};
+
+type PropsType = WithTranslation &
+    ReturnType<typeof mapStateToProps> &
+    ReturnType<typeof mapDispatchToProps>;
+
+class HomePageComponent extends React.Component<PropsType> {
+    componentDidMount() {
+        this.props.giveMeData();
     }
     render() {
-        const { t } = this.props;
-        const { productList, loading, error } = this.state;
+        const { t, productList, loading, error } = this.props;
         if (loading) {
             return (
                 <Spin
@@ -120,7 +122,10 @@ class HomePageComponent extends React.Component<WithTranslation, State> {
     }
 }
 
-export const HomePage = withTranslation()(HomePageComponent);
+export const HomePage = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(withTranslation()(HomePageComponent));
 
 // export const HomePage: React.FC = () => {
 //     return (
