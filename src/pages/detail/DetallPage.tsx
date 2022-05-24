@@ -11,6 +11,9 @@ import {
 } from "../../components";
 import { DatePicker, Space } from "antd";
 import { commentMockData } from "./mockup";
+import { ProductDetailSlice } from "../../redux/productDetail/slice";
+import { useSelector } from "../../redux/hooks";
+import { useDispatch } from "react-redux";
 
 const { RangePicker } = DatePicker;
 
@@ -26,23 +29,32 @@ const { RangePicker } = DatePicker;
 export const DetailPage: React.FC = () => {
     let params = useParams();
     // const { touristRouteId } = useParams<string>();
-    const [loading, setLoading] = useState<boolean>(true);
-    const [product, setProduct] = useState<any>(null);
-    const [error, setError] = useState<string | null>(null);
+    // const [loading, setLoading] = useState<boolean>(true);
+    // const [product, setProduct] = useState<any>(null);
+    // const [error, setError] = useState<string | null>(null);
+
+    const loading = useSelector((state) => state.productDetail.loading);
+    const error = useSelector((state) => state.productDetail.error);
+    const product = useSelector((state) => state.productDetail.data);
+
+    const dispatch = useDispatch();
 
     // 因為頁面的初始化數據只會調用ㄧ次，所以useEffect第二個參數加上[]空數組
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
+            dispatch(ProductDetailSlice.actions.fetchStart());
+            // setLoading(true);
             try {
                 const { data } = await axios.get(
                     `http://123.56.149.216:8089/api/touristRoutes/${params.detailID}`
                 );
-                setProduct(data);
-                setLoading(false);
+                // setProduct(data);
+                // setLoading(false);
+                dispatch(ProductDetailSlice.actions.fetchSuccess(data));
             } catch (error) {
-                setError("沒有任何商品");
-                setLoading(false);
+                // setError("沒有任何商品");
+                // setLoading(false);
+                dispatch(ProductDetailSlice.actions.fetchFail("沒有任何商品"));
             }
         };
         fetchData();
